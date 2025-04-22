@@ -1,11 +1,110 @@
 meta {
-  name: TODO add more request here...
+  name: Get smarthouse info
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8000/smarthouse
+  body: none
+  auth: none
+}
+meta {
+  name: Add sensor measurement
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8000/smarthouse/sensor/sensor123/current
+  body: json
+  auth: none
+  json_body: {
+    "timestamp": "2025-04-22T15:45:00",
+    "value": 23.4,
+    "unit": "°C"
+  }
+}
+meta {
+  name: Get all devices
+  type: http
+  seq: 2
+}
+
+get {
+  url: http://localhost:8000/smarthouse/device
+  body: none
+  auth: none
+}
+meta {
+  name: Get all floors
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8000/smarthouse/floor
+  body: none
+  auth: none
+}
+meta {
+  name: Get rooms on floor 1
   type: http
   seq: 4
 }
 
 get {
-  url: 
+  url: http://localhost:8000/smarthouse/floor/1/room
   body: none
   auth: none
 }
+meta {
+  name: Get device by ID
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8000/smarthouse/device/device123
+  body: none
+  auth: none
+}
+meta {
+  name: Get sensor current measurement
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8000/smarthouse/sensor/sensor123/current
+  body: none
+  auth: none
+}
+meta {
+  name: Add sensor measurement
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:8000/smarthouse/sensor/sensor123/current
+  body: json
+  auth: none
+  json_body: {
+    "timestamp": "2025-04-22T15:45:00",
+    "value": 21.8,
+    "unit": "°C"
+  }
+}
+meta {
+  name: Get latest 3 sensor values
+  type: http
+  seq: 8
+}
+
+get {
+  url: http://localhost:8000/smarthouse/sensor/sensor123/values?limit=3
+  body: none
+  auth: none
+}
+
