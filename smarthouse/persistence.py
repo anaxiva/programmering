@@ -87,6 +87,58 @@ class SmartHouseRepository:
         cursor.close()
         return result
 
+    def get_readings(self, sensor: str, limit_n: int | None) -> list[Measurement]:
+        cursor = self.cursor()
+        if limit_n:
+            cursor.execute("""\
+SELECT ts, value, unit 
+FROM measurements
+WHERE device = ?
+ORDER BY datetime(ts) DESC 
+LIMIT ?
+            """, (sensor, limit_n))
+        else:
+            cursor.execute("""\
+SELECT ts, value, unit 
+FROM measurements
+WHERE device = ?
+ORDER BY datetime(ts) DESC 
+            """, (sensor,))
+        tuples = cursor.fetchall()
+        result = [Measurement(timestamp=t[0], value=t[1], unit=t[2]) for t in tuples]
+        cursor.close()
+        return result
+
+    def delete_oldest_reading(self, sensor: str) -> Measurement | None:
+        c = self.cursor()
+        query = """\
+SELECT ts, value, unit FROM measurements WHERE device = ? ORDER BY datetime(ts) ASC LIMIT 1
+        """
+        c.execute(query, (sensor,))
+        tup = c.fetchone()
+        if tup:
+            query = f"""
+    DELETE FROM measurements
+    WHERE device = ?
+    AND ts = ?
+            """
+            c.execute(query, (sensor, tup[0]))
+            self.conn.commit()
+        c.close()
+        if tup:
+            return Measurement(timestamp=tup[0], value=tup[1], unit=tup[2])
+        else:
+            return None
+
+    def insert_measurement(self, sensor: str, measurement: Measurement) -> None:
+        query = f"""
+INSERT INTO measurements (device, ts, value, unit) VALUES (?, ?, ?, ?)
+        """
+        c = self.cursor()
+        c.execute(query, (sensor, measurement.timestamp, measurement.value, measurement.unit))
+        self.conn.commit()
+        c.close()
+
     def get_latest_reading(self, sensor) -> Optional[Measurement]:
         """
         Retrieves the most recent sensor reading for the given sensor object if available.
@@ -103,7 +155,7 @@ limit 1;
         result = c.fetchall()
         if len(result) == 0:
             return None
-        m = Measurement(result[0][0], float(result[0][1]), result[0][2])
+        m = Measurement(timestamp=result[0][0], value=float(result[0][1]), unit=result[0][2])
         c.close()
         return m
 
@@ -193,8 +245,3 @@ HAVING COUNT(m.value) > 3;
             for h in cursor.fetchall():
                 result.append(int(h[0]))
         return result
-
-
-
-
-
